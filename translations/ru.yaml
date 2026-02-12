@@ -1,0 +1,19 @@
+configuration:
+  interface:
+    name: Интерфейс
+    description: Имя VPN-интерфейса (например, wg0)
+  config_file:
+    name: Файл конфигурации
+    description: Имя файла конфигурации VPN в папке настроек дополнения (например, wg0.conf)
+  autostart:
+    name: Автозапуск VPN
+    description: Подключать VPN автоматически при запуске дополнения
+  autostart_delay_seconds:
+    name: Задержка автозапуска
+    description: Задержка в секундах перед подключением VPN при старте (только при включённом автозапуске)
+  ingress_allow_ip:
+    name: Разрешённый IP для Ingress
+    description: IP-адрес, разрешённый для Ingress-прокси (по умолчанию 172.30.32.2)
+  log_level:
+    name: Уровень логирования
+    description: Уровень детализации логов приложения

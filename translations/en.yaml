@@ -1,0 +1,19 @@
+configuration:
+  interface:
+    name: Interface
+    description: VPN interface name (e.g. wg0)
+  config_file:
+    name: Config file
+    description: VPN config filename in add-on config folder (e.g. wg0.conf)
+  autostart:
+    name: Autostart VPN
+    description: Connect VPN automatically when the add-on starts
+  autostart_delay_seconds:
+    name: Autostart delay
+    description: Delay in seconds before connecting VPN on startup (only when Autostart is enabled)
+  ingress_allow_ip:
+    name: Ingress allow IP
+    description: IP address allowed for Ingress proxy (default 172.30.32.2)
+  log_level:
+    name: Log level
+    description: Application log level
