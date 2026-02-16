@@ -8,9 +8,9 @@ import vpn_control
 
 def get_protocol_from_request() -> str:
     p = (
-        request.args.get("protocol")
-        or request.form.get("protocol")
-        or config.DEFAULT_PROTOCOL
+            request.args.get("protocol")
+            or request.form.get("protocol")
+            or config.DEFAULT_PROTOCOL
     ).strip().lower()
     if not any(x["id"] == p for x in config.PROTOCOLS):
         return "wireguard"

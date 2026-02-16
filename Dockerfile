@@ -12,7 +12,7 @@ RUN apk add --no-cache \
     curl
 
 COPY run.sh /
-COPY app /app
+COPY custom_components/tunnels /app
 RUN chmod a+x /run.sh
 
 CMD [ "/run.sh" ]
