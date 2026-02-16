@@ -1,0 +1,1 @@
+{"domain":"tunnels","name":"Tunnels: Home Assistant remote access","codeowners":["@yepIwt"],"config_flow":true,"documentation":"https://github.com/hass-automations/tunnels","iot_class":"local_push","issue_tracker":"https://github.com/hass-automations/tunnels/issues","version":"0.1.0"}
