@@ -1,0 +1,6 @@
+{
+    "name": "Tunnels: Home Assistant remote access",
+    "render_readme": true,
+    "country": ["AE", "DE", "KZ", "RU", "US", "UA"],
+    "homeassistant": "2026.2.1"
+}
