@@ -3,16 +3,22 @@ import os
 from utils import parse_autostart_delay_seconds
 
 # Protocol-agnostic VPN settings (WireGuard when DEFAULT_PROTOCOL=wireguard).
-VPN_INTERFACE = os.getenv("VPN_INTERFACE", os.getenv("WG_INTERFACE", "wg0"))
-# Runtime path used by wg-quick (inside container)
+# Universal interface name for this add-on (must match run.sh VPN_INTERFACE).
+INTERFACE_NAME = "tunnels0"
+VPN_INTERFACE = os.getenv("VPN_INTERFACE", INTERFACE_NAME)
+# Universal VPN config filename in add-on config folder (must match run.sh CONFIG_FILE).
+CONFIG_FILENAME = "tunnels.conf"
+# Protocol-agnostic runtime dir (same for WireGuard, OpenVPN, etc.; must match run.sh VPN_RUNTIME_DIR).
+VPN_RUNTIME_DIR = "/etc/tunnels"
+# Runtime path to VPN config (inside container); binary (wg-quick, openvpn) gets this path.
 VPN_CONFIG_PATH = os.getenv(
     "VPN_CONFIG_PATH",
-    os.getenv("WG_CONFIG_DST", f"/etc/wireguard/{VPN_INTERFACE}.conf"),
+    os.getenv("VPN_CONFIG_DST", f"{VPN_RUNTIME_DIR}/{VPN_INTERFACE}.conf"),
 )
 # Persistent path (addon_config, survives restart)
 VPN_CONFIG_PERSISTENT = os.getenv(
-    "WG_CONFIG_SRC",
-    os.getenv("VPN_CONFIG_PERSISTENT", VPN_CONFIG_PATH),
+    "VPN_CONFIG_SRC",
+    os.getenv("VPN_CONFIG_PERSISTENT", f"/config/{CONFIG_FILENAME}"),
 )
 AUTOSTART = os.getenv("AUTOSTART", "false").lower() == "true"
 # Задержка в секундах перед подключением VPN при autostart (1–300)

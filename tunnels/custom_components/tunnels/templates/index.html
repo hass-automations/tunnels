@@ -747,6 +747,34 @@
       const hidden = $("protocolHidden");
       if (hidden) hidden.value = sel.value;
 
+      // Ingress-safe form submit: POST via fetch so the request stays under the same path (no redirect to HA root)
+      function basePath() {
+        const p = window.location.pathname;
+        return p.endsWith("/") ? p : p + "/";
+      }
+
+      function interceptForm(form, doneMsg) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const action = (form.getAttribute("action") || "config").replace(/^\//, "");
+          const url = basePath() + action;
+          const body = new URLSearchParams(new FormData(form));
+          try {
+            const res = await fetch(url, { method: "POST", body, cache: "no-store" });
+            const text = await res.text();
+            if (!res.ok) throw new Error(text || "HTTP " + res.status);
+            showToast("OK", doneMsg || "Done");
+            await refreshStatus();
+          } catch (err) {
+            showToast("Error", err.message || String(err));
+          }
+        });
+      }
+
+      interceptForm($("cfgForm"), "Config saved");
+      document.querySelectorAll("form[action='start']").forEach(f => interceptForm(f, "Start requested"));
+      document.querySelectorAll("form[action='stop']").forEach(f => interceptForm(f, "Stop requested"));
+
       // Initial refresh for accurate ts + runtime data
       refreshStatus();
       window.setInterval(refreshStatus, 8000);

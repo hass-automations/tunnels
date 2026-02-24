@@ -1,10 +1,4 @@
 configuration:
-  interface:
-    name: Интерфейс
-    description: Имя VPN-интерфейса (например, wg0)
-  config_file:
-    name: Файл конфигурации
-    description: Имя файла конфигурации VPN в папке настроек дополнения (например, wg0.conf)
   autostart:
     name: Автозапуск VPN
     description: Подключать VPN автоматически при запуске дополнения

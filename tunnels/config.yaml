@@ -1,10 +1,13 @@
 name: "Tunnels: Home Assistant remote access"
-version: "0.1.0"
+version: "0.2.0"
 slug: "tunnels"
 description: >-
   An add-on for connecting to various VPNs for remote access to Home Assistant
 url: "https://github.com/hass-automations/tunnels"
 init: false
+
+# Icon file in this addon directory (Supervisor looks for icon.png here by default; explicit for clarity)
+icon: icon.png
 
 arch:
   - aarch64
@@ -33,16 +36,12 @@ map:
     path: /config
 
 options:
-  interface: wg0
-  config_file: wg0.conf
   autostart: false
   autostart_delay_seconds: 5
   ingress_allow_ip: "172.30.32.2"
   log_level: info
 
 schema:
-  interface: str
-  config_file: str
   autostart: bool
   autostart_delay_seconds: list(3|5|10|15|30|60|120|300)
   ingress_allow_ip: str
