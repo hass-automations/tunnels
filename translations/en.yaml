@@ -1,10 +1,4 @@
 configuration:
-  interface:
-    name: Interface
-    description: VPN interface name (e.g. wg0)
-  config_file:
-    name: Config file
-    description: VPN config filename in add-on config folder (e.g. wg0.conf)
   autostart:
     name: Autostart VPN
     description: Connect VPN automatically when the add-on starts

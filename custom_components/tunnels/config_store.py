@@ -17,7 +17,7 @@ def read_config() -> str:
 
 
 def write_config(text: str) -> tuple[bool, str]:
-    """Save to persistent path (addon_config) and sync to runtime path (wg-quick)."""
+    """Save to persistent path (addon_config) and sync to runtime path (used by VPN binary)."""
     if "[Interface]" not in text:
         return False, "Invalid config: missing [Interface] section"
 

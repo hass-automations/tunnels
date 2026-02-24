@@ -36,7 +36,7 @@ def vpn_up() -> tuple[bool, str]:
             return True, "Already up."
 
         rc, out = utils.run_cmd(
-            ["wg-quick", "up", config.VPN_INTERFACE], timeout=45
+            ["wg-quick", "up", config.VPN_CONFIG_PATH], timeout=45
         )
         return rc == 0, out
     finally:
@@ -54,7 +54,7 @@ def vpn_down() -> tuple[bool, str]:
             return True, "Already down."
 
         rc, out = utils.run_cmd(
-            ["wg-quick", "down", config.VPN_INTERFACE], timeout=45
+            ["wg-quick", "down", config.VPN_CONFIG_PATH], timeout=45
         )
         return rc == 0, out
     finally:
