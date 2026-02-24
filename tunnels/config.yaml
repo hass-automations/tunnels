@@ -1,5 +1,5 @@
 name: "Tunnels: Home Assistant remote access"
-version: "0.1.0"
+version: "0.2.0"
 slug: "tunnels"
 description: >-
   An add-on for connecting to various VPNs for remote access to Home Assistant
