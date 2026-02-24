@@ -6,6 +6,9 @@ description: >-
 url: "https://github.com/hass-automations/tunnels"
 init: false
 
+# Icon file in this addon directory (Supervisor looks for icon.png here by default; explicit for clarity)
+icon: icon.png
+
 arch:
   - aarch64
   - amd64
