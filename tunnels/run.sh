@@ -19,18 +19,27 @@ DEFAULT_PROTOCOL="${DEFAULT_PROTOCOL:-wireguard}"
 SRC="/config/${CONFIG_FILE}"
 DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}.conf"
 
+AWG_SRC="/config/tunnels-amneziawg.conf"
+AWG_DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}-amneziawg.conf"
+
 mkdir -p "${VPN_RUNTIME_DIR}"
+
+# Migrate: if tunnels.conf contains AmneziaWG-specific params (Jc/Jmin/H1/S1),
+# move it to tunnels-amneziawg.conf so WireGuard tab shows empty.
+if [ -f "${SRC}" ] && grep -qE "^(Jc|Jmin|Jmax|S1|S2|H1|H2|H3|H4) " "${SRC}"; then
+  bashio::log.info "Migrating AmneziaWG config from ${SRC} to ${AWG_SRC}"
+  [ -f "${AWG_SRC}" ] || cp "${SRC}" "${AWG_SRC}"
+  rm -f "${SRC}"
+fi
 
 if [ -f "${SRC}" ]; then
   cp "${SRC}" "${DST}"
   chmod 600 "${DST}"
-  bashio::log.info "VPN config loaded: ${SRC} -> ${DST}"
+  bashio::log.info "WireGuard config loaded: ${SRC} -> ${DST}"
 else
-  bashio::log.warning "WireGuard config file not found: ${SRC}"
+  bashio::log.warning "WireGuard config not found: ${SRC}"
 fi
 
-AWG_SRC="/config/tunnels-amneziawg.conf"
-AWG_DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}-amneziawg.conf"
 if [ -f "${AWG_SRC}" ]; then
   cp "${AWG_SRC}" "${AWG_DST}"
   chmod 600 "${AWG_DST}"

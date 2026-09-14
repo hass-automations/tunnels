@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3
+
+- Fix: auto-migrate `tunnels.conf` → `tunnels-amneziawg.conf` at startup if it contains AmneziaWG params (Jc/H1/S1 etc.) — WireGuard tab no longer shows leftover AmneziaWG config
+
 ## 0.3.2
 
 - Fix: WireGuard and AmneziaWG now use separate config files (`tunnels.conf` vs `tunnels-amneziawg.conf`) — switching protocol tabs no longer overwrites each other's config
