@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+- Fix: Python 3.9 compatibility (`dict | None` syntax replaced with `from __future__ import annotations`)
+- Fix: Docker builder now includes `bash` so `awg-quick` gets installed by `make install`
+- Fix: multi-stage build uses `golang:1.25-alpine` to satisfy `amneziawg-go` Go version requirement
+
 ## 0.3.0
 
 - AmneziaWG: added as a second protocol option (Beta); builds `amneziawg-go` and `awg`/`awg-quick` from source at image build time
