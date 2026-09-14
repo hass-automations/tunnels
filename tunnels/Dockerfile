@@ -1,5 +1,15 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
 ARG BUILD_FROM
+
+# Alpine 3.15 ships Go 1.17 which can't parse go.mod with 'go 1.25.0'.
+# Use official golang image as a build stage, copy only the final binaries.
+FROM golang:1.25-alpine AS awgbuilder
+RUN apk add --no-cache git make linux-headers libmnl-dev \
+ && git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-go /tmp/awg-go \
+ && cd /tmp/awg-go && go build -ldflags="-s -w" -o /usr/bin/amneziawg-go . \
+ && git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-tools /tmp/awg-tools \
+ && cd /tmp/awg-tools/src && make && make install PREFIX=/usr
+
 FROM $BUILD_FROM
 
 RUN apk add --no-cache \
@@ -12,17 +22,9 @@ RUN apk add --no-cache \
     openresolv \
     curl
 
-# Build amneziawg-go (userspace, no kernel module needed) and awg/awg-quick from master.
-# Master is required: server runs AmneziaWG 2.0 with I1-I5 + HeaderProtectionKey params.
-# libmnl stays installed after apk del because wireguard-tools depends on it at runtime.
-RUN apk add --no-cache --virtual .awgbuild \
-        go git make linux-headers libmnl-dev \
- && git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-go /tmp/awg-go \
- && cd /tmp/awg-go && go build -ldflags="-s -w" -o /usr/bin/amneziawg-go . \
- && git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-tools /tmp/awg-tools \
- && cd /tmp/awg-tools/src && make && make install PREFIX=/usr \
- && rm -rf /tmp/awg-go /tmp/awg-tools /root/go /root/.cache \
- && apk del .awgbuild
+COPY --from=awgbuilder /usr/bin/amneziawg-go /usr/bin/amneziawg-go
+COPY --from=awgbuilder /usr/bin/awg          /usr/bin/awg
+COPY --from=awgbuilder /usr/bin/awg-quick    /usr/bin/awg-quick
 
 COPY run.sh /
 COPY custom_components/tunnels /app
