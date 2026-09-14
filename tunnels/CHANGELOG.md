@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- Fix: WireGuard and AmneziaWG now use separate config files (`tunnels.conf` vs `tunnels-amneziawg.conf`) — switching protocol tabs no longer overwrites each other's config
+
 ## 0.3.1
 
 - Fix: Python 3.9 compatibility (`dict | None` syntax replaced with `from __future__ import annotations`)

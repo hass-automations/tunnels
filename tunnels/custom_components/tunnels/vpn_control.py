@@ -8,10 +8,8 @@ import time
 import config
 import utils
 
-APPLIED_HASH_PATH = "/data/applied_config.hash"
 
-
-def _tools(protocol: str) -> tuple[str, str]:
+def _tools(protocol: str) -> tuple:
     if protocol == "amneziawg":
         return "awg", "awg-quick"
     return "wg", "wg-quick"
@@ -27,31 +25,39 @@ def _cmd_env(protocol: str) -> dict | None:
     return _awg_env() if protocol == "amneziawg" else None
 
 
-def _config_hash() -> str:
+def _runtime_path(protocol: str) -> str:
+    return config.get_config_paths(protocol)[1]
+
+
+def _applied_hash_path(protocol: str) -> str:
+    return f"/data/applied_config_{protocol}.hash"
+
+
+def _config_hash(protocol: str) -> str:
     try:
-        with open(config.VPN_CONFIG_PATH, "rb") as f:
+        with open(_runtime_path(protocol), "rb") as f:
             return hashlib.sha256(f.read()).hexdigest()
     except Exception:
         return ""
 
 
-def _read_applied_hash() -> str:
+def _read_applied_hash(protocol: str) -> str:
     try:
-        with open(APPLIED_HASH_PATH) as f:
+        with open(_applied_hash_path(protocol)) as f:
             return f.read().strip()
     except Exception:
         return ""
 
 
-def _write_applied_hash(h: str) -> None:
+def _write_applied_hash(protocol: str, h: str) -> None:
     os.makedirs("/data", exist_ok=True)
-    with open(APPLIED_HASH_PATH, "w") as f:
+    with open(_applied_hash_path(protocol), "w") as f:
         f.write(h)
 
 
-def _clear_applied_hash() -> None:
+def _clear_applied_hash(protocol: str) -> None:
     try:
-        os.remove(APPLIED_HASH_PATH)
+        os.remove(_applied_hash_path(protocol))
     except Exception:
         pass
 
@@ -105,24 +111,24 @@ def vpn_ip_addr(protocol: str = "wireguard") -> str:
     return out
 
 
-def vpn_up(protocol: str = "wireguard") -> tuple[bool, str]:
+def vpn_up(protocol: str = "wireguard") -> tuple:
     _, wg_quick = _tools(protocol)
     env = _cmd_env(protocol)
+    cfg_path = _runtime_path(protocol)
     lockf = utils.locked()
     try:
-        if not os.path.exists(config.VPN_CONFIG_PATH):
-            return False, f"Config not found: {config.VPN_CONFIG_PATH}"
+        if not os.path.exists(cfg_path):
+            return False, f"Config not found: {cfg_path}"
 
-        current_hash = _config_hash()
+        current_hash = _config_hash(protocol)
         if vpn_is_up(protocol):
-            if current_hash == _read_applied_hash():
+            if current_hash == _read_applied_hash(protocol):
                 return True, "Already up."
-            # Config changed — restart with new config
-            utils.run_cmd([wg_quick, "down", config.VPN_CONFIG_PATH], timeout=45, env=env)
+            utils.run_cmd([wg_quick, "down", cfg_path], timeout=45, env=env)
 
-        rc, out = utils.run_cmd([wg_quick, "up", config.VPN_CONFIG_PATH], timeout=45, env=env)
+        rc, out = utils.run_cmd([wg_quick, "up", cfg_path], timeout=45, env=env)
         if rc == 0:
-            _write_applied_hash(current_hash)
+            _write_applied_hash(protocol, current_hash)
         return rc == 0, out
     finally:
         try:
@@ -132,16 +138,17 @@ def vpn_up(protocol: str = "wireguard") -> tuple[bool, str]:
             pass
 
 
-def vpn_down(protocol: str = "wireguard") -> tuple[bool, str]:
+def vpn_down(protocol: str = "wireguard") -> tuple:
     _, wg_quick = _tools(protocol)
     env = _cmd_env(protocol)
+    cfg_path = _runtime_path(protocol)
     lockf = utils.locked()
     try:
         if not vpn_is_up(protocol):
             return True, "Already down."
-        rc, out = utils.run_cmd([wg_quick, "down", config.VPN_CONFIG_PATH], timeout=45, env=env)
+        rc, out = utils.run_cmd([wg_quick, "down", cfg_path], timeout=45, env=env)
         if rc == 0:
-            _clear_applied_hash()
+            _clear_applied_hash(protocol)
         return rc == 0, out
     finally:
         try:

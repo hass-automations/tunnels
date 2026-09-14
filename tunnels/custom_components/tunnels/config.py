@@ -32,6 +32,17 @@ ALLOWED_REMOTE = {INGRESS_ALLOWED_IP, "127.0.0.1", "::1"}
 VPN_LOCK_PATH = "/tmp/vpn_toggle.lock"
 LAST_ACTION_PATH = "/data/last_action.log"
 
+
+def get_config_paths(protocol: str = "wireguard") -> tuple:
+    """Return (persistent_path, runtime_path) for the given protocol."""
+    base = os.path.dirname(VPN_CONFIG_PERSISTENT)
+    if protocol == "amneziawg":
+        return (
+            os.path.join(base, "tunnels-amneziawg.conf"),
+            os.path.join(VPN_RUNTIME_DIR, f"{VPN_INTERFACE}-amneziawg.conf"),
+        )
+    return VPN_CONFIG_PERSISTENT, VPN_CONFIG_PATH
+
 PROTOCOLS = [
     {"id": "wireguard",  "label": "WireGuard",  "enabled": True,  "badge": "Stable"},
     {"id": "amneziawg", "label": "AmneziaWG",  "enabled": True,  "badge": "Beta"},

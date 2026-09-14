@@ -27,7 +27,14 @@ if [ -f "${SRC}" ]; then
   bashio::log.info "VPN config loaded: ${SRC} -> ${DST}"
 else
   bashio::log.warning "WireGuard config file not found: ${SRC}"
-  bashio::log.warning "Upload config in the add-on UI or put tunnels.conf into the add-on config folder."
+fi
+
+AWG_SRC="/config/tunnels-amneziawg.conf"
+AWG_DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}-amneziawg.conf"
+if [ -f "${AWG_SRC}" ]; then
+  cp "${AWG_SRC}" "${AWG_DST}"
+  chmod 600 "${AWG_DST}"
+  bashio::log.info "AmneziaWG config loaded: ${AWG_SRC} -> ${AWG_DST}"
 fi
 
 export VPN_INTERFACE

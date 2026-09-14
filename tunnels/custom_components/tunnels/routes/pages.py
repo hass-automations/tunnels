@@ -18,7 +18,7 @@ def index():
     st = protocols.proto_status(protocol)
 
     last = utils.read_last_action()
-    cfg = config_store.read_config() if protocol in protocols.SUPPORTED else ""
+    cfg = config_store.read_config(protocol) if protocol in protocols.SUPPORTED else ""
     cfg_exists = bool(cfg.strip()) if protocol in protocols.SUPPORTED else False
 
     html = render_index_html(
@@ -42,7 +42,7 @@ def save_config():
     if not cfg:
         abort(400, "Empty config")
 
-    ok, msg = config_store.write_config(cfg)
+    ok, msg = config_store.write_config(cfg, protocol)
     utils.write_last_action("save_config", ok, msg)
 
     if ok and vpn_control.vpn_is_up(protocol):
