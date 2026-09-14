@@ -3,6 +3,7 @@ from html import escape
 
 import config
 import protocols
+from protocols import SUPPORTED
 
 
 def render_index_html(
@@ -32,7 +33,7 @@ def render_index_html(
     status_class = "ok" if up else ("bad" if supported else "warn")
     supported_badge = "supported" if supported else "not implemented"
 
-    if protocol == "wireguard":
+    if protocol in SUPPORTED:
         cfg_badge_class = "ok" if cfg_exists else "bad"
         cfg_badge_text = "present" if cfg_exists else "missing"
         cfg_note = "Saved to " + escape(vpn_config_path)

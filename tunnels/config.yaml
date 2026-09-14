@@ -1,5 +1,5 @@
 name: "Tunnels: Home Assistant remote access"
-version: "0.2.0"
+version: "0.3.0"
 slug: "tunnels"
 description: >-
   An add-on for connecting to various VPNs for remote access to Home Assistant
@@ -30,6 +30,9 @@ panel_icon: "mdi:vpn"
 panel_title: "Tunnels"
 panel_admin: true
 
+devices:
+  - /dev/net/tun
+
 map:
   - type: addon_config
     read_only: false
@@ -40,9 +43,11 @@ options:
   autostart_delay_seconds: 5
   ingress_allow_ip: "172.30.32.2"
   log_level: info
+  default_protocol: wireguard
 
 schema:
   autostart: bool
   autostart_delay_seconds: list(3|5|10|15|30|60|120|300)
   ingress_allow_ip: str
   log_level: list(debug|info|warning|error)
+  default_protocol: list(wireguard|amneziawg)

@@ -18,8 +18,8 @@ def index():
     st = protocols.proto_status(protocol)
 
     last = utils.read_last_action()
-    cfg = config_store.read_config() if protocol == "wireguard" else ""
-    cfg_exists = bool(cfg.strip()) if protocol == "wireguard" else False
+    cfg = config_store.read_config() if protocol in protocols.SUPPORTED else ""
+    cfg_exists = bool(cfg.strip()) if protocol in protocols.SUPPORTED else False
 
     html = render_index_html(
         protocol=protocol,
@@ -35,7 +35,7 @@ def index():
 @pages_bp.post("/config")
 def save_config():
     protocol = protocols.get_protocol_from_request()
-    if protocol != "wireguard":
+    if protocol not in protocols.SUPPORTED:
         abort(400, f"Protocol not implemented: {protocol}")
 
     cfg = request.form.get("config", "").strip()
@@ -45,9 +45,9 @@ def save_config():
     ok, msg = config_store.write_config(cfg)
     utils.write_last_action("save_config", ok, msg)
 
-    if ok and vpn_control.vpn_is_up():
-        vpn_control.vpn_down()
-        vpn_control.vpn_up()
+    if ok and vpn_control.vpn_is_up(protocol):
+        vpn_control.vpn_down(protocol)
+        vpn_control.vpn_up(protocol)
 
     return redirect(f"./?protocol={escape(protocol)}", code=303)
 
@@ -55,10 +55,10 @@ def save_config():
 @pages_bp.post("/start")
 def start():
     protocol = protocols.get_protocol_from_request()
-    if protocol != "wireguard":
+    if protocol not in protocols.SUPPORTED:
         abort(400, f"Protocol not implemented: {protocol}")
 
-    ok, out = vpn_control.vpn_up()
+    ok, out = vpn_control.vpn_up(protocol)
     utils.write_last_action("start", ok, out)
     return redirect(f"./?protocol={escape(protocol)}", code=303)
 
@@ -66,9 +66,9 @@ def start():
 @pages_bp.post("/stop")
 def stop():
     protocol = protocols.get_protocol_from_request()
-    if protocol != "wireguard":
+    if protocol not in protocols.SUPPORTED:
         abort(400, f"Protocol not implemented: {protocol}")
 
-    ok, out = vpn_control.vpn_down()
+    ok, out = vpn_control.vpn_down(protocol)
     utils.write_last_action("stop", ok, out)
     return redirect(f"./?protocol={escape(protocol)}", code=303)

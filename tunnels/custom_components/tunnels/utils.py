@@ -15,9 +15,9 @@ def parse_autostart_delay_seconds(default: int = 5, min_sec: int = 1, max_sec: i
         return default
 
 
-def run_cmd(cmd: list[str], timeout: int = 45) -> tuple[int, str]:
+def run_cmd(cmd: list[str], timeout: int = 45, env: dict | None = None) -> tuple[int, str]:
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
         out = (res.stdout or "") + (res.stderr or "")
         return res.returncode, out.strip()
     except subprocess.TimeoutExpired:

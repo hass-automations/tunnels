@@ -32,9 +32,9 @@ ALLOWED_REMOTE = {INGRESS_ALLOWED_IP, "127.0.0.1", "::1"}
 VPN_LOCK_PATH = "/tmp/vpn_toggle.lock"
 LAST_ACTION_PATH = "/data/last_action.log"
 
-# UI: list protocols (backend currently supports WireGuard only).
 PROTOCOLS = [
-    {"id": "wireguard", "label": "WireGuard", "enabled": True, "badge": "Stable"},
-    {"id": "openvpn", "label": "OpenVPN", "enabled": False, "badge": "Planned"}
+    {"id": "wireguard",  "label": "WireGuard",  "enabled": True,  "badge": "Stable"},
+    {"id": "amneziawg", "label": "AmneziaWG",  "enabled": True,  "badge": "Beta"},
+    {"id": "openvpn",   "label": "OpenVPN",    "enabled": False, "badge": "Planned"},
 ]
 DEFAULT_PROTOCOL = os.getenv("DEFAULT_PROTOCOL", "wireguard").strip().lower()

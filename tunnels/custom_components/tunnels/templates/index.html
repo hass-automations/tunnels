@@ -695,7 +695,7 @@
         const p = activeProtocol();
         const text = $("cfg").value || "";
 
-        if (p !== "wireguard") {
+        if (!["wireguard", "amneziawg"].includes(p)) {
           showToast("Validation", "Protocol not implemented. Validation rules will be added with backend support.");
           return;
         }

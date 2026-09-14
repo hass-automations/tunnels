@@ -13,6 +13,8 @@ AUTOSTART_DELAY_SECONDS="$(bashio::config 'autostart_delay_seconds')"
 AUTOSTART_DELAY_SECONDS="${AUTOSTART_DELAY_SECONDS:-5}"
 LOG_LEVEL="$(bashio::config 'log_level')"
 INGRESS_ALLOWED_IP="$(bashio::config 'ingress_allow_ip')"
+DEFAULT_PROTOCOL="$(bashio::config 'default_protocol')"
+DEFAULT_PROTOCOL="${DEFAULT_PROTOCOL:-wireguard}"
 
 SRC="/config/${CONFIG_FILE}"
 DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}.conf"
@@ -35,5 +37,6 @@ export AUTOSTART
 export AUTOSTART_DELAY_SECONDS
 export LOG_LEVEL
 export INGRESS_ALLOWED_IP
+export DEFAULT_PROTOCOL
 
 exec python3 -u /app/server.py
