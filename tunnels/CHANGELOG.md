@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.4
+
+- Fix: runtime config is always `tunnels0.conf` (wg-quick/awg-quick require filename == interface name); `vpn_up()` copies the correct persistent config there before each start
+
 ## 0.3.3
 
 - Fix: auto-migrate `tunnels.conf` → `tunnels-amneziawg.conf` at startup if it contains AmneziaWG params (Jc/H1/S1 etc.) — WireGuard tab no longer shows leftover AmneziaWG config

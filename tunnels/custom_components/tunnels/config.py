@@ -34,13 +34,14 @@ LAST_ACTION_PATH = "/data/last_action.log"
 
 
 def get_config_paths(protocol: str = "wireguard") -> tuple:
-    """Return (persistent_path, runtime_path) for the given protocol."""
+    """Return (persistent_path, runtime_path) for the given protocol.
+
+    Runtime path is always VPN_CONFIG_PATH (tunnels0.conf) because wg-quick/awg-quick
+    require the filename to match the interface name exactly.
+    """
     base = os.path.dirname(VPN_CONFIG_PERSISTENT)
     if protocol == "amneziawg":
-        return (
-            os.path.join(base, "tunnels-amneziawg.conf"),
-            os.path.join(VPN_RUNTIME_DIR, f"{VPN_INTERFACE}-amneziawg.conf"),
-        )
+        return os.path.join(base, "tunnels-amneziawg.conf"), VPN_CONFIG_PATH
     return VPN_CONFIG_PERSISTENT, VPN_CONFIG_PATH
 
 PROTOCOLS = [

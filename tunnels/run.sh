@@ -20,7 +20,6 @@ SRC="/config/${CONFIG_FILE}"
 DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}.conf"
 
 AWG_SRC="/config/tunnels-amneziawg.conf"
-AWG_DST="${VPN_RUNTIME_DIR}/${VPN_INTERFACE}-amneziawg.conf"
 
 mkdir -p "${VPN_RUNTIME_DIR}"
 
@@ -32,19 +31,7 @@ if [ -f "${SRC}" ] && grep -qE "^(Jc|Jmin|Jmax|S1|S2|H1|H2|H3|H4) " "${SRC}"; th
   rm -f "${SRC}"
 fi
 
-if [ -f "${SRC}" ]; then
-  cp "${SRC}" "${DST}"
-  chmod 600 "${DST}"
-  bashio::log.info "WireGuard config loaded: ${SRC} -> ${DST}"
-else
-  bashio::log.warning "WireGuard config not found: ${SRC}"
-fi
-
-if [ -f "${AWG_SRC}" ]; then
-  cp "${AWG_SRC}" "${AWG_DST}"
-  chmod 600 "${AWG_DST}"
-  bashio::log.info "AmneziaWG config loaded: ${AWG_SRC} -> ${AWG_DST}"
-fi
+# Runtime config copy is handled by vpn_up() at start time.
 
 export VPN_INTERFACE
 export VPN_CONFIG_DST="${DST}"
