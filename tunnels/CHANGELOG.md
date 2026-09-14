@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.7
+
+- Fix: add `SYS_ADMIN` capability — required for `sysctl net.ipv4.conf.all.src_valid_mark=1` when routing all traffic through VPN (`AllowedIPs = 0.0.0.0/0`)
+
 ## 0.3.6
 
 - Fix: IPv6 `AllowedIPs` (`::/0`) stripped at runtime — `ip6_tables` module absent in HA containers causes `awg-quick` to roll back the whole connection

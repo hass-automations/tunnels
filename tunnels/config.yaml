@@ -1,5 +1,5 @@
 name: "Tunnels: Home Assistant remote access"
-version: "0.3.6"
+version: "0.3.7"
 slug: "tunnels"
 description: >-
   An add-on for connecting to various VPNs for remote access to Home Assistant
@@ -23,6 +23,7 @@ host_network: true
 kernel_modules: true
 privileged:
   - NET_ADMIN
+  - SYS_ADMIN
 
 ingress: true
 ingress_port: 8099
