@@ -4,7 +4,7 @@ ARG BUILD_FROM
 # Alpine 3.15 ships Go 1.17 which can't parse go.mod with 'go 1.25.0'.
 # Use official golang image as a build stage, copy only the final binaries.
 FROM golang:1.25-alpine AS awgbuilder
-RUN apk add --no-cache git make linux-headers libmnl-dev \
+RUN apk add --no-cache git make gcc musl-dev linux-headers libmnl-dev \
  && git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-go /tmp/awg-go \
  && cd /tmp/awg-go && go build -ldflags="-s -w" -o /usr/bin/amneziawg-go . \
  && git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-tools /tmp/awg-tools \
