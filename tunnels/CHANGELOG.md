@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.6
+
+- Fix: IPv6 `AllowedIPs` (`::/0`) stripped at runtime — `ip6_tables` module absent in HA containers causes `awg-quick` to roll back the whole connection
+
 ## 0.3.5
 
 - Fix: AmneziaWG config range values (e.g. `PersistentKeepalive = 25-35`) are resolved to midpoint integers before passing to `awg setconf` — eliminates "Configuration parsing error"

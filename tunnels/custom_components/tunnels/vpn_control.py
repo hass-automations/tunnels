@@ -13,17 +13,31 @@ import utils
 _RANGE_RE = re.compile(r"^(\d+)\s*-\s*(\d+)$")
 
 
-def _resolve_ranges(text: str) -> str:
-    """Resolve Amnezia app range values like '25-35' → '30' (midpoint)."""
+def _preprocess_awg_config(text: str) -> str:
+    """Normalize Amnezia app config for awg-quick:
+    - Range values like '25-35' → midpoint integer (awg setconf requires integers)
+    - Strip IPv6 AllowedIPs (ip6_tables absent in HA containers → awg-quick rolls back)
+    """
     lines = []
     for line in text.splitlines():
         stripped = line.strip()
         if stripped and "=" in stripped and not stripped.startswith("#"):
             key, _, value = stripped.partition("=")
-            m = _RANGE_RE.match(value.strip())
+            key_s = key.strip()
+            value = value.strip()
+
+            # Resolve range values
+            m = _RANGE_RE.match(value)
             if m:
                 lo, hi = int(m.group(1)), int(m.group(2))
-                line = f"{key.rstrip()} = {(lo + hi) // 2}"
+                value = str((lo + hi) // 2)
+
+            # Drop IPv6 entries from AllowedIPs — keeps only IPv4 CIDRs
+            if key_s.lower() == "allowedips":
+                ipv4 = [ip.strip() for ip in value.split(",") if ":" not in ip.strip()]
+                value = ", ".join(ipv4) if ipv4 else value
+
+            line = f"{key_s} = {value}"
         lines.append(line)
     return "\n".join(lines) + "\n"
 
@@ -151,7 +165,7 @@ def vpn_up(protocol: str = "wireguard") -> tuple:
         with open(persistent, "r") as f:
             text = f.read()
         if protocol == "amneziawg":
-            text = _resolve_ranges(text)
+            text = _preprocess_awg_config(text)
         with open(runtime, "w") as f:
             f.write(text)
         os.chmod(runtime, 0o600)
