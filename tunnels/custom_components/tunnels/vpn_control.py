@@ -16,15 +16,81 @@ _RANGE_RE = re.compile(r"^(\d+)\s*-\s*(\d+)$")
 def _preprocess_awg_config(text: str) -> str:
     """Normalize Amnezia app config for awg-quick:
     - Range values like '25-35' → midpoint integer (awg setconf requires integers)
-    - Strip IPv6 AllowedIPs (ip6_tables absent in HA containers → awg-quick rolls back)
+    - Strip IPv6 AllowedIPs (ip6_tables absent in HA containers)
+    - When AllowedIPs=0.0.0.0/0: inject Table=off + PostUp/PostDown manual routing
+      to avoid 'sysctl src_valid_mark' which fails on HA's read-only /proc/sys
     """
+    # Pass 1: find server IP and whether full default route is requested
+    endpoint_ip = None
+    has_full_route = False
+    in_peer = False
+    for raw in text.splitlines():
+        s = raw.strip()
+        if s == "[Peer]":
+            in_peer = True
+            continue
+        if s.startswith("[") and s != "[Peer]":
+            in_peer = False
+            continue
+        if in_peer and "=" in s:
+            k, _, v = s.partition("=")
+            k, v = k.strip().lower(), v.strip()
+            if k == "endpoint":
+                host = v.rsplit(":", 1)[0].strip("[]")
+                if host:
+                    endpoint_ip = host
+            if k == "allowedips":
+                if any(x.strip() in ("0.0.0.0/0", "0/0") for x in v.split(",")):
+                    has_full_route = True
+
+    # Manual routing injected when routing all traffic through VPN:
+    #   1. Add specific host route for the VPN server via original gateway (prevents loop)
+    #   2. Add default route via VPN interface (lower metric → higher priority)
+    #   PostDown cleans up both routes, original default (higher metric) takes over again.
+    inject_routing = has_full_route and endpoint_ip
+    if inject_routing:
+        srv = endpoint_ip
+        post_up = (
+            f"GW=$(ip route show default | awk '/via/ {{print $3; exit}}'); "
+            f"ip route add {srv}/32 via $GW 2>/dev/null || true; "
+            f"ip route add default dev %i metric 0"
+        )
+        post_down = (
+            f"ip route del default dev %i metric 0 2>/dev/null || true; "
+            f"ip route del {srv}/32 2>/dev/null || true"
+        )
+
+    # Pass 2: emit normalized config
     lines = []
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped and "=" in stripped and not stripped.startswith("#"):
-            key, _, value = stripped.partition("=")
-            key_s = key.strip()
-            value = value.strip()
+    in_interface = False
+    in_peer = False
+    extras_emitted = False
+
+    for raw in text.splitlines():
+        s = raw.strip()
+
+        if s == "[Interface]":
+            in_interface, in_peer = True, False
+            lines.append(raw)
+            continue
+
+        if s == "[Peer]":
+            if in_interface and not extras_emitted and inject_routing:
+                lines.append("Table = off")
+                lines.append(f"PostUp = {post_up}")
+                lines.append(f"PostDown = {post_down}")
+                extras_emitted = True
+            in_interface, in_peer = False, True
+            lines.append(raw)
+            continue
+
+        if not s or s.startswith("#"):
+            lines.append(raw)
+            continue
+
+        if "=" in s:
+            key, _, value = s.partition("=")
+            key_s, value = key.strip(), value.strip()
 
             # Resolve range values
             m = _RANGE_RE.match(value)
@@ -32,13 +98,22 @@ def _preprocess_awg_config(text: str) -> str:
                 lo, hi = int(m.group(1)), int(m.group(2))
                 value = str((lo + hi) // 2)
 
-            # Drop IPv6 entries from AllowedIPs — keeps only IPv4 CIDRs
+            # Drop IPv6 from AllowedIPs
             if key_s.lower() == "allowedips":
                 ipv4 = [ip.strip() for ip in value.split(",") if ":" not in ip.strip()]
-                value = ", ".join(ipv4) if ipv4 else value
+                if ipv4:
+                    value = ", ".join(ipv4)
 
-            line = f"{key_s} = {value}"
-        lines.append(line)
+            lines.append(f"{key_s} = {value}")
+            continue
+
+        lines.append(raw)
+
+    if in_interface and not extras_emitted and inject_routing:
+        lines.append("Table = off")
+        lines.append(f"PostUp = {post_up}")
+        lines.append(f"PostDown = {post_down}")
+
     return "\n".join(lines) + "\n"
 
 

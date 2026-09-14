@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.8
+
+- Fix: inject `Table = off` + manual PostUp/PostDown routing when `AllowedIPs = 0.0.0.0/0` — avoids `sysctl src_valid_mark` which is read-only on HA OS regardless of `SYS_ADMIN` capability
+- The VPN server IP gets a host route via the original gateway (prevents routing loop); default is routed through the VPN interface (metric 0, highest priority)
+
 ## 0.3.7
 
 - Fix: add `SYS_ADMIN` capability — required for `sysctl net.ipv4.conf.all.src_valid_mark=1` when routing all traffic through VPN (`AllowedIPs = 0.0.0.0/0`)
