@@ -724,9 +724,9 @@
       try {
         const saved = localStorage.getItem("vpn_protocol");
         if (saved && saved !== sel.value) {
-          // if saved exists and option available, apply
           const opt = Array.from(sel.options).find(o => o.value === saved);
-          if (opt && !opt.disabled) sel.value = saved;
+          // Navigate so server re-renders with the correct protocol's config
+          if (opt && !opt.disabled) navigateToProtocol(saved);
         }
       } catch (e) {}
 

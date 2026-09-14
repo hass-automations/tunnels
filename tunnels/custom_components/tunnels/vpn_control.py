@@ -3,11 +3,29 @@ from __future__ import annotations
 import fcntl
 import hashlib
 import os
+import re
 import shutil
 import time
 
 import config
 import utils
+
+_RANGE_RE = re.compile(r"^(\d+)\s*-\s*(\d+)$")
+
+
+def _resolve_ranges(text: str) -> str:
+    """Resolve Amnezia app range values like '25-35' → '30' (midpoint)."""
+    lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped and "=" in stripped and not stripped.startswith("#"):
+            key, _, value = stripped.partition("=")
+            m = _RANGE_RE.match(value.strip())
+            if m:
+                lo, hi = int(m.group(1)), int(m.group(2))
+                line = f"{key.rstrip()} = {(lo + hi) // 2}"
+        lines.append(line)
+    return "\n".join(lines) + "\n"
 
 
 def _tools(protocol: str) -> tuple:
@@ -123,9 +141,19 @@ def vpn_up(protocol: str = "wireguard") -> tuple:
                 return True, "Already up."
             utils.run_cmd([wg_quick, "down", runtime], timeout=45, env=env)
 
-        # wg-quick/awg-quick require filename == interface name, so copy persistent → runtime
+        if protocol == "amneziawg":
+            # Kill any stale userspace daemon left from a failed previous start
+            utils.run_cmd(["pkill", "-f", f"amneziawg-go {config.VPN_INTERFACE}"], timeout=5)
+
+        # wg-quick/awg-quick require filename == interface name, so copy persistent → runtime.
+        # For amneziawg, resolve Amnezia app range values (e.g. '25-35') to integers first.
         os.makedirs(os.path.dirname(runtime), exist_ok=True)
-        shutil.copy2(persistent, runtime)
+        with open(persistent, "r") as f:
+            text = f.read()
+        if protocol == "amneziawg":
+            text = _resolve_ranges(text)
+        with open(runtime, "w") as f:
+            f.write(text)
         os.chmod(runtime, 0o600)
 
         rc, out = utils.run_cmd([wg_quick, "up", runtime], timeout=45, env=env)

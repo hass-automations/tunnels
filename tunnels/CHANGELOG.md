@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.5
+
+- Fix: AmneziaWG config range values (e.g. `PersistentKeepalive = 25-35`) are resolved to midpoint integers before passing to `awg setconf` — eliminates "Configuration parsing error"
+- Fix: stale `amneziawg-go` process (left from a failed previous start) is killed before each new start — eliminates "TUN not pollable" error on retry
+- Fix: protocol tab on first page load now navigates to the correct server-rendered page (previously localStorage could restore the wrong tab without refreshing the config)
+
 ## 0.3.4
 
 - Fix: runtime config is always `tunnels0.conf` (wg-quick/awg-quick require filename == interface name); `vpn_up()` copies the correct persistent config there before each start
